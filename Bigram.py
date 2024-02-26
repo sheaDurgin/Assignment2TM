@@ -25,9 +25,9 @@ class Bigram:
     def __init__(self, genre_to_songs):
         self.genre_to_songs = genre_to_songs
         self.term_freq_per_genre = {genre: Counter() for genre in genre_to_songs.keys()}
-        self.uni_term_freq_per_genre = {genre: Counter() for genre in genre_to_songs.keys()}
-        self.get_term_freq_per_genre()
+        self.total_terms = {}
         self.term_prob_per_genre = {}
+        self.get_term_freq_per_genre()
         self.get_term_prob_per_genre()
 
     # Get freq for tokens in each genre
@@ -35,15 +35,14 @@ class Bigram:
         for genre, songs in self.genre_to_songs.items():
             for text in songs:     
                 tokens = preprocess(text)
-                self.uni_term_freq_per_genre[genre].update(tokens)
                 for prev, token in zip(tokens[:-1], tokens[1:]):
                     self.term_freq_per_genre[genre][(prev, token)] += 1
 
     # Convert freq to prob for each genres tokens
     def get_term_prob_per_genre(self):
         for genre in self.genre_to_songs:
-            total_terms = sum(self.uni_term_freq_per_genre[genre].values())           
-            self.term_prob_per_genre[genre] = {term: freq + 1 / self.uni_term_freq_per_genre[genre][term[0]] + total_terms for term, freq in self.term_freq_per_genre[genre].items()}
+            self.total_terms[genre] = sum(self.term_freq_per_genre[genre].values()) + len(self.term_freq_per_genre[genre])
+            self.term_prob_per_genre[genre] = {term: (freq + 1) / self.total_terms[genre] for term, freq in self.term_freq_per_genre[genre].items()}
     
     # Calculate probability for each genre given a text
     def calculate_prob(self, text):

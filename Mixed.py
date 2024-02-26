@@ -32,9 +32,9 @@ class Mixed:
         for genre in self.u_model.genre_to_songs:
             mixed_results[genre] = (self.split * unigram_results[genre]) + ((1 - self.split) * bigram_results[genre])
 
-        return mixed_results, unigram_results, bigram_results
+        return [mixed_results, unigram_results, bigram_results]
     
     # For all models, predict a genre
     def predict_and_return_all(self, input_text):
-        mixed_results, unigram_results, bigram_results = self.calculate_prob_and_return_all(input_text)
-        return [max(mixed_results, key=mixed_results.get), max(unigram_results, key=unigram_results.get), max(bigram_results, key=bigram_results.get)]
+        all_results = self.calculate_prob_and_return_all(input_text)
+        return [max(results, key=results.get) for results in all_results]
