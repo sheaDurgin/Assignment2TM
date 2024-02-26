@@ -23,6 +23,7 @@ def split_files_random(genre_to_songs, train_ratio=0.9, random_seed=None):
 
     return train_genre_to_songs, dev_genre_to_songs
 
+# Get f1 scores for each model on the test set
 def test(model):
     with open('test.tsv', 'r', newline='') as tsvfile:
         tsv_reader = csv.reader(tsvfile, delimiter='\t')
@@ -45,6 +46,7 @@ def test(model):
         f1 = f1_score(scores[name]['y_true'], scores[name]['y_pred'], average=average)
         print(f"F1-score for {name}: {f1}")
 
+# Get song data for each genre
 def get_data(dir_path):
     genre_to_songs = {}
     for genre in os.listdir(dir_path):
@@ -60,6 +62,7 @@ def get_data(dir_path):
     
     return genre_to_songs
 
+# Find optimal lambda value using the training and validation sets
 def get_best_model_split(genre_to_songs):
     train_genre_to_songs, dev_genre_to_songs = split_files_random(genre_to_songs, random_seed=42)
 
