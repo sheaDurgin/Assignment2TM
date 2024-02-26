@@ -25,32 +25,38 @@ class Bigram:
     def __init__(self, genre_to_songs):
         self.genre_to_songs = genre_to_songs
         self.term_freq_per_genre = {genre: Counter() for genre in genre_to_songs.keys()}
+        self.uni_term_freq_per_genre = {genre: Counter() for genre in genre_to_songs.keys()}
         self.get_term_freq_per_genre()
         self.term_prob_per_genre = {}
         self.get_term_prob_per_genre()
 
+    # Get freq for tokens in each genre
     def get_term_freq_per_genre(self):
         for genre, songs in self.genre_to_songs.items():
             for text in songs:     
                 tokens = preprocess(text)
+                self.uni_term_freq_per_genre[genre].update(tokens)
                 for prev, token in zip(tokens[:-1], tokens[1:]):
                     self.term_freq_per_genre[genre][(prev, token)] += 1
 
+    # Convert freq to prob for each genres tokens
     def get_term_prob_per_genre(self):
         for genre in self.genre_to_songs:
-            total_terms = sum(self.term_freq_per_genre[genre].values())
-            self.term_prob_per_genre[genre] = {term: freq / total_terms for term, freq in self.term_freq_per_genre[genre].items()}
+            total_terms = sum(self.uni_term_freq_per_genre[genre].values())           
+            self.term_prob_per_genre[genre] = {term: freq + 1 / self.uni_term_freq_per_genre[genre][term[0]] + total_terms for term, freq in self.term_freq_per_genre[genre].items()}
     
+    # Calculate probability for each genre given a text
     def calculate_prob(self, text):
         tokens = preprocess(text)
         results = {}
         for genre, term_prob in self.term_prob_per_genre.items():
             prob = 0.0
             for prev, token in zip(tokens[:-1], tokens[1:]):
-                prob += math.log(term_prob.get((prev, token), 1e-8))
+                prob += math.log(term_prob.get((prev, token), 1e-7))
             results[genre] = prob
         return results
     
+    # Predict a genre
     def predict(self, text):
         results = self.calculate_prob(text)
         return max(results, key=results.get)

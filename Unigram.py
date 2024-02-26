@@ -27,16 +27,19 @@ class Unigram:
         self.term_prob_per_genre = {}
         self.get_term_prob_per_genre()
 
+    # Get freq for tokens in each genre
     def get_term_freq_per_genre(self):
         for genre, songs in self.genre_to_songs.items():
-            for text in songs:  
+            for text in songs:
                 self.term_freq_per_genre[genre].update(preprocess(text))
 
+    # Convert freq to prob for each genres tokens
     def get_term_prob_per_genre(self):
         for genre in self.genre_to_songs:
             total_terms = sum(self.term_freq_per_genre[genre].values())
             self.term_prob_per_genre[genre] = {term: freq / total_terms for term, freq in self.term_freq_per_genre[genre].items()}
     
+    # Calculate probability for each genre given a text
     def calculate_prob(self, text):
         tokens = preprocess(text)
         results = {}
@@ -47,6 +50,7 @@ class Unigram:
             results[genre] = prob
         return results
     
+    # Predict a genre
     def predict(self, text):
         results = self.calculate_prob(text)
         return max(results, key=results.get)
